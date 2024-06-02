@@ -9,14 +9,14 @@ from plugins import *
 
 
 @plugins.register(
-    name="Nicecoze",
+    name="NiceCoze",
     desire_priority=66,
     hidden=False,
-    desc="一款优化coze-discord-proxy返回结果的插件。",
-    version="1.1",
+    desc="优化coze-discord-proxy的返回结果。",
+    version="1.2",
     author="空心菜",
 )
-class Nicecoze(Plugin):
+class NiceCoze(Plugin):
     def __init__(self):
         super().__init__()
         try:
@@ -34,7 +34,7 @@ class Nicecoze(Plugin):
             context = e_context["context"]
             content = e_context["reply"].content.strip()
             # 避免图片无法下载时，重复调用插件导致没有响应的问题
-            if content.startswith("[NICECOZE提醒您图片下载失败了，点击网址将就看吧]"):
+            if content.startswith("[DOWNLOAD_ERROR]"):
                 return
             # 提取CDP返回的Markdown图片链接中的网址，并修改ReplyType为IMAGE_URL，以便CoW自动下载Markdown链接中的图片
             if all(x in content for x in ['![', 'http']) and any(x in content for x in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']):
@@ -42,7 +42,7 @@ class Nicecoze(Plugin):
                 replies = self.decorate_markdown_image(content)
                 if replies:
                     logger.info(f"[Nicecoze] sending {len(replies)} images ...")
-                    e_context["reply"].content = "[NICECOZE提醒您图片下载失败了，点击网址将就看吧]\n" + e_context["reply"].content
+                    e_context["reply"].content = "[DOWNLOAD_ERROR]\n" + e_context["reply"].content
                     for reply in replies:
                         channel.send(reply, context)
                     e_context["reply"] = Reply(ReplyType.TEXT, f"{len(replies)}张图片已发送，收到了吗？")
@@ -61,6 +61,14 @@ class Nicecoze(Plugin):
             e_context.action = EventAction.CONTINUE
 
     def decorate_markdown_image(self, content):
+        # 完全匹配Coze画图的Markdown图片
+        markdown_image_ciciai = r"(\S*)\!?\[(?P<image_name>.*)\]\((?P<image_url>https\:\/\/\S+?\.ciciai\.com\/[\S]*\.png(\?[\S]*)?)\)(\S*)"
+        match_obj_ciciai = re.fullmatch(markdown_image_ciciai, content)
+        if match_obj_ciciai and match_obj_ciciai.group('image_url'):
+            image_name, image_url = match_obj_ciciai.group('image_name'), match_obj_ciciai.group('image_url')
+            logger.info(f"[Nicecoze] markdown_image_ciciai found, image_name={image_name}, image_url={image_url}")
+            reply = Reply(ReplyType.IMAGE_URL, image_url)
+            return [reply]
         # 完全匹配一张Markdown图片（格式：`![name](url)`）
         markdown_image1 = r"\!\[(?P<image_name>.*)\]\((?P<image_url>https?\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(:[0-9]{1,5})?(\/[\S]*)\.(jpg|jpeg|png|gif|bmp|webp)(\?[\S]*)?)\)"
         match_obj1 = re.fullmatch(markdown_image1, content, re.DOTALL)
@@ -84,5 +92,5 @@ class Nicecoze(Plugin):
             logger.info(f"[Nicecoze] it seems markdown image in the content but not matched, content={content}.")
 
     def get_help_text(self, **kwargs):
-        return "优化coze-discord-proxy返回结果的插件。"
+        return "优化coze-discord-proxy的返回结果。"
 
