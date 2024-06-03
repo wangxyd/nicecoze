@@ -62,7 +62,7 @@ class NiceCoze(Plugin):
 
     def decorate_markdown_image(self, content):
         # 完全匹配Coze画图的Markdown图片
-        markdown_image_ciciai = r"(\S*)\!?\[(?P<image_name>.*)\]\((?P<image_url>https\:\/\/\S+?\.ciciai\.com\/[\S]*\.png(\?[\S]*)?)\)(\S*)"
+        markdown_image_ciciai = r"([\S\s]*)\!?\[(?P<image_name>.*)\]\((?P<image_url>https\:\/\/\S+?\.ciciai\.com\/[\S]*\.png(\?[\S]*)?)\)([\S\s]*)"
         match_obj_ciciai = re.fullmatch(markdown_image_ciciai, content)
         if match_obj_ciciai and match_obj_ciciai.group('image_url'):
             image_name, image_url = match_obj_ciciai.group('image_name'), match_obj_ciciai.group('image_url')
