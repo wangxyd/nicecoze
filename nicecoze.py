@@ -39,7 +39,7 @@ class NiceCoze(Plugin):
                 return
             # 提取Coze返回的Markdown图片链接中的网址，并修改ReplyType为IMAGE_URL，以便CoW自动下载Markdown链接中的图片
             #if all(x in content for x in ['![', 'http']) and any(x in content for x in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']):
-            if 'http' in content and any(x in content for x in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']):
+            if 'http' in content and any(x in content for x in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']):
                 logger.debug(f"[Nicecoze] starting decorate_markdown_image, content={content}")
                 replies = self.decorate_markdown_image(content)
                 if replies:
@@ -60,7 +60,7 @@ class NiceCoze(Plugin):
                 logger.info(f"[Nicecoze] match_obj_s_coze_cn found, link_url={link_url}")
                 response = requests.get(url=link_url, allow_redirects=False)
                 original_url = response.headers.get('Location')
-                if response.status_code in [301, 302] and original_url and any(x in original_url for x in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']):
+                if response.status_code in [301, 302] and original_url and any(x in original_url for x in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']):
                     logger.info(f"[Nicecoze] match_obj_s_coze_cn found and original_url is a image url, original_url={original_url}")
                     reply = Reply(ReplyType.IMAGE_URL, original_url)
                     e_context["reply"] = reply
